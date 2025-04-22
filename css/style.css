@@ -1,0 +1,66 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+#search-section {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 8px;
+  width: 250px;
+}
+
+button {
+  padding: 8px 12px;
+}
+
+.movie {
+  border: 1px solid #ddd;
+  background-color: white;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  display: inline-block;
+  width: 200px;
+  vertical-align: top;
+  margin-right: 10px;
+}
+
+.movie img {
+  width: 100%;
+  border-radius: 5px;
+}
+nav {
+  background-color: #1c1c1c;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  align-items: center;
+  border-radius: 0 0 10px 10px;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.nav-links li a:hover {
+  text-decoration: underline;
+}
