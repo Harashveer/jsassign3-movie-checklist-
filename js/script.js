@@ -1,4 +1,5 @@
-const API_KEY = "00f16a0dc41541122c802e844f07e520";
+// TMDB Setup for Movie Search
+const API_KEY = "00f16a0dc41541122c802e844f07e520";//api ley
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
@@ -9,13 +10,13 @@ const booksContainer = document.getElementById("books-container");
 searchBtn.addEventListener("click", function () {
   const query = searchInput.value.trim();
   if (query !== "") {
-    searchMovies(query);
-    searchBooks(query);
+    searchMovies(query); // fetch movie data from TMDB
+    searchBooks(query); // fetch book data from Google Books
   }
 });
 
 // movies
-
+//  Makes a call to TMDB to search movies
 function searchMovies(query) {
   const url =
     BASE_URL +
@@ -30,7 +31,7 @@ function searchMovies(query) {
     })
     .then(function (data) {
       if (data.results) {
-        showMovies(data.results);
+        showMovies(data.results); // Display movies
       } else {
         moviesContainer.innerHTML = "<p>No movies found.</p>";
       }
@@ -42,7 +43,7 @@ function searchMovies(query) {
 }
 
 function showMovies(movies) {
-  moviesContainer.innerHTML = "";
+  moviesContainer.innerHTML = ""; // clear previous results
 
   for (let i = 0; i < movies.length; i++) {
     const movie = movies[i];
@@ -84,7 +85,7 @@ function showMovies(movies) {
 }
 
 // book
-
+//  Makes a call to google books to search books
 function searchBooks(query) {
   const url =
     "https://www.googleapis.com/books/v1/volumes?q=" +
@@ -95,7 +96,7 @@ function searchBooks(query) {
       return response.json();
     })
     .then(function (data) {
-      console.log("Google Books API response:", data); // 👈 check what you're getting
+      console.log("Google Books API response:", data); 
       if (data.items && data.items.length > 0) {
         showBooks(data.items);
       } else {
@@ -137,7 +138,7 @@ function showBooks(books) {
     if (info.imageLinks && info.imageLinks.thumbnail) {
       image = info.imageLinks.thumbnail;
     }
-
+    // Build the HTML content for one book
     bookDiv.innerHTML =
       "<h3>" +
       title +
@@ -171,9 +172,11 @@ function showBooks(books) {
 // stay saved when switching pages or refreshing. It suggested using localStorage to store the data,
 // which worked well for what I needed.
 
+
+// This function saves movies/books to a single watchlist in localStorage
 function addToWatchlist(id, title, image, rating, type) {
   let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
-
+  // Check if item is already in the list
   let alreadyExists = false;
   for (let i = 0; i < watchlist.length; i++) {
     if (watchlist[i].id === id) {
