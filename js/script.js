@@ -86,18 +86,30 @@ function showMovies(movies) {
 
 // book
 //  Makes a call to google books to search books
+
+
+
+// During testing, the Google Books API was returning a "403 Forbidden" error. 
+//   After investigating, I discovered the issue was caused by the public API quota being exceeded for the default shared Google project.
+
+//   To resolve this, I created my own Google Cloud Project and generated a personal API key. 
+//   I then enabled the "Books API" for that project and updated my script to include the API key securely.
+
+//   This change allowed the book search functionality to work consistently without hitting shared quota limits.
+const BOOKS_API_KEY = "AIzaSyA5PrJzW1zrirkyThIpfmRWKatD3BOCk1w";
 function searchBooks(query) {
   const url =
     "https://www.googleapis.com/books/v1/volumes?q=" +
-    encodeURIComponent(query);
+    encodeURIComponent(query) +
+    "&key=" +
+    BOOKS_API_KEY;
 
   fetch(url)
     .then(function (response) {
       return response.json();
     })
     .then(function (data) {
-      console.log("Google Books API response:", data); 
-      if (data.items && data.items.length > 0) {
+      if (data.items) {
         showBooks(data.items);
       } else {
         booksContainer.innerHTML = "<p>No books found.</p>";
