@@ -3,10 +3,6 @@ const watchlistContainer = document.getElementById("watchlist-container");
 
 let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
-// I used AI (copilot) to help with this part because I was stuggling with how to make the watchlist
-// stay saved when switching pages or refreshing. It suggested using localStorage to store the data,
-// which worked well for what I needed.
-
 function renderWatchlist() {
   watchlistContainer.innerHTML = "";
 
@@ -15,47 +11,73 @@ function renderWatchlist() {
     return;
   }
 
-  watchlist.forEach((movie) => {
-    const movieDiv = document.createElement("div");
-    movieDiv.classList.add("movie");
+  for (let i = 0; i < watchlist.length; i++) {
+    const item = watchlist[i];
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("movie");
 
-    movieDiv.innerHTML = `
-      <h3>${movie.title}</h3>
-      <img src="${
-        movie.posterPath
-          ? IMAGE_BASE_URL + movie.posterPath
-          : "https://via.placeholder.com/200x300?text=No+Image"
-      }" alt="${movie.title}">
-      <p>Rating: ${movie.rating}</p>
-      <p>Status: ${movie.watched ? "✅ Watched" : "⏳ Not Watched"}</p>
-      <button onclick="toggleWatched(${movie.id})">
-        ${movie.watched ? "Mark Unwatched" : "Mark Watched"}
-      </button>
-      <button onclick="removeFromWatchlist(${
-        movie.id
-      })" style="margin-top: 5px; background-color: crimson; color: white;">
-        Remove
-      </button>
-    `;
+    let statusText = " Not Watched/Read";
+    if (item.watched === true) {
+      statusText = " Watched/Read";
+    }
 
-    watchlistContainer.appendChild(movieDiv);
-  });
+    let typeText = " Movie";
+    if (item.type === "book") {
+      typeText = " Book";
+    }
+
+    itemDiv.innerHTML =
+      "<h3>" +
+      item.title +
+      "</h3>" +
+      '<img src="' +
+      item.posterPath +
+      '" alt="' +
+      item.title +
+      '">' +
+      "<p>Type: " +
+      typeText +
+      "</p>" +
+      "<p>Rating: " +
+      item.rating +
+      "</p>" +
+      "<p>Status: " +
+      statusText +
+      "</p>" +
+      "<button onclick=\"toggleWatched('" +
+      item.id +
+      "')\">" +
+      (item.watched ? "Mark Unwatched" : "Mark Watched") +
+      "</button>" +
+      "<button onclick=\"removeFromWatchlist('" +
+      item.id +
+      '\')" style="background-color: crimson; color: white; margin-top: 5px;">Remove</button>';
+
+    watchlistContainer.appendChild(itemDiv);
+  }
 }
 
 function toggleWatched(id) {
-  watchlist = watchlist.map((movie) => {
-    if (movie.id === id) {
-      return { ...movie, watched: !movie.watched };
+  for (let i = 0; i < watchlist.length; i++) {
+    if (watchlist[i].id === id) {
+      watchlist[i].watched = !watchlist[i].watched;
     }
-    return movie;
-  });
+  }
 
   localStorage.setItem("watchlist", JSON.stringify(watchlist));
   renderWatchlist();
 }
 
 function removeFromWatchlist(id) {
-  watchlist = watchlist.filter((movie) => movie.id !== id);
+  let newList = [];
+
+  for (let i = 0; i < watchlist.length; i++) {
+    if (watchlist[i].id !== id) {
+      newList.push(watchlist[i]);
+    }
+  }
+
+  watchlist = newList;
   localStorage.setItem("watchlist", JSON.stringify(watchlist));
   renderWatchlist();
 }

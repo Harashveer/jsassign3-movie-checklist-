@@ -5,121 +5,199 @@ const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const moviesContainer = document.getElementById("movies-container");
-
-searchBtn.addEventListener("click", () => {
+const booksContainer = document.getElementById("books-container");
+searchBtn.addEventListener("click", function () {
   const query = searchInput.value.trim();
   if (query !== "") {
     searchMovies(query);
+    searchBooks(query);
   }
 });
 
+// movies
+
 function searchMovies(query) {
-  fetch(
-    `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-      query
-    )}`
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      displayMovies(data.results);
+  const url =
+    BASE_URL +
+    "/search/movie?api_key=" +
+    API_KEY +
+    "&query=" +
+    encodeURIComponent(query);
+
+  fetch(url)
+    .then(function (response) {
+      return response.json();
     })
-    .catch((err) => {
-      console.error("Error fetching movies:", err);
-      moviesContainer.innerHTML =
-        "<p>Error loading movies. Please try again.</p>";
+    .then(function (data) {
+      if (data.results) {
+        showMovies(data.results);
+      } else {
+        moviesContainer.innerHTML = "<p>No movies found.</p>";
+      }
+    })
+    .catch(function (error) {
+      console.log("Error fetching movies:", error);
+      moviesContainer.innerHTML = "<p>Failed to load movies.</p>";
     });
 }
 
-function displayMovies(movies) {
+function showMovies(movies) {
   moviesContainer.innerHTML = "";
 
-  if (movies.length === 0) {
-    moviesContainer.innerHTML = "<p>No results found.</p>";
-    return;
-  }
-
-  movies.forEach((movie) => {
+  for (let i = 0; i < movies.length; i++) {
+    const movie = movies[i];
     const movieDiv = document.createElement("div");
     movieDiv.classList.add("movie");
 
-    movieDiv.innerHTML = `
-      <h3>${movie.title}</h3>
-      <img src="${
-        movie.poster_path
-          ? IMAGE_BASE_URL + movie.poster_path
-          : "https://via.placeholder.com/200x300?text=No+Image"
-      }" alt="${movie.title}">
-      <p>Rating: ${movie.vote_average}</p>
-      <button onclick="addToWatchlist(${movie.id}, \`${movie.title.replace(
-      /'/g,
-      "\\'"
-    )}\`, '${movie.poster_path}', ${movie.vote_average})">
-        Add to Watchlist
-      </button>
-    `;
+    let title = movie.title;
+    let rating = movie.vote_average;
+    let image = "https://via.placeholder.com/200x300?text=No+Image";
+
+    if (movie.poster_path) {
+      image = IMAGE_BASE_URL + movie.poster_path;
+    }
+
+    movieDiv.innerHTML =
+      "<h3>" +
+      title +
+      "</h3>" +
+      '<img src="' +
+      image +
+      '" alt="' +
+      title +
+      '">' +
+      "<p>Rating: " +
+      rating +
+      "</p>" +
+      "<button onclick=\"addToWatchlist('" +
+      movie.id +
+      "', '" +
+      title.replace(/'/g, "\\'") +
+      "', '" +
+      image +
+      "', '" +
+      rating +
+      "', 'movie')\">Add to Watchlist</button>";
 
     moviesContainer.appendChild(movieDiv);
-  });
+  }
 }
 
-// I used AI (copilot) to help with this part because I was struglling with how to make the watchlist
-// stay saved when switching pages or refreshing. It suggested using localStorage to store the data,
-// which worked well for what I needed.
-
-let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
-
-function addToWatchlist(id, title, posterPath, rating) {
-  if (watchlist.some((movie) => movie.id === id)) return;
-
-  watchlist.push({
-    id,
-    title,
-    posterPath,
-    rating,
-    watched: false,
-  });
-
-  localStorage.setItem("watchlist", JSON.stringify(watchlist));
-  alert("Added to watchlist!");
-}
-
+// book
 
 function searchBooks(query) {
-  fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`)
-    .then(res => res.json())
-    .then(data => {
-      displayBooks(data.items);
+  const url =
+    "https://www.googleapis.com/books/v1/volumes?q=" +
+    encodeURIComponent(query);
+
+  fetch(url)
+    .then(function (response) {
+      return response.json();
     })
-    .catch(err => {
-      console.error("Error fetching books:", err);
-      moviesContainer.innerHTML = "<p>Failed to load books. Try again later.</p>";
+    .then(function (data) {
+      console.log("Google Books API response:", data); // 👈 check what you're getting
+      if (data.items && data.items.length > 0) {
+        showBooks(data.items);
+      } else {
+        booksContainer.innerHTML = "<p>No books found.</p>";
+      }
+    })
+    .catch(function (error) {
+      console.log("Error fetching books:", error);
+      booksContainer.innerHTML = "<p>Failed to load books.</p>";
     });
 }
 
-function displayBooks(books) {
-  moviesContainer.innerHTML = ""; // Reusing same container
+function showBooks(books) {
+  booksContainer.innerHTML = "";
 
-  if (!books || books.length === 0) {
-    moviesContainer.innerHTML = "<p>No books found.</p>";
-    return;
-  }
-
-  books.forEach(book => {
+  for (let i = 0; i < books.length; i++) {
+    const book = books[i];
     const info = book.volumeInfo;
 
     const bookDiv = document.createElement("div");
-    bookDiv.classList.add("movie"); // reuse movie card style
+    bookDiv.classList.add("movie");
 
-    bookDiv.innerHTML = `
-      <h3>${info.title}</h3>
-      <img src="${info.imageLinks?.thumbnail || 'https://via.placeholder.com/200x300?text=No+Image'}" alt="${info.title}">
-      <p>Author: ${info.authors ? info.authors.join(', ') : 'Unknown'}</p>
-      <p>Rating: ${info.averageRating || 'N/A'}</p>
-      <button onclick="addToReadingList('${book.id}', \`${info.title.replace(/'/g, "\\'")}\`, '${info.imageLinks?.thumbnail}', '${info.authors ? info.authors.join(', ') : ''}', ${info.averageRating || 0})">
-        Add to Reading List
-      </button>
-    `;
+    let title = "No Title";
+    if (info.title) {
+      title = info.title;
+    }
 
-    moviesContainer.appendChild(bookDiv);
-  });
+    let authors = "Unknown";
+    if (info.authors && info.authors.length > 0) {
+      authors = info.authors.join(", ");
+    }
+
+    let rating = "N/A";
+    if (info.averageRating) {
+      rating = info.averageRating;
+    }
+
+    let image = "https://via.placeholder.com/200x300?text=No+Image";
+    if (info.imageLinks && info.imageLinks.thumbnail) {
+      image = info.imageLinks.thumbnail;
+    }
+
+    bookDiv.innerHTML =
+      "<h3>" +
+      title +
+      "</h3>" +
+      '<img src="' +
+      image +
+      '" alt="' +
+      title +
+      '">' +
+      "<p>Author: " +
+      authors +
+      "</p>" +
+      "<p>Rating: " +
+      rating +
+      "</p>" +
+      "<button onclick=\"addToWatchlist('" +
+      book.id +
+      "', '" +
+      title.replace(/'/g, "\\'") +
+      "', '" +
+      image +
+      "', '" +
+      rating +
+      "', 'book')\">Add to Reading List</button>";
+
+    booksContainer.appendChild(bookDiv);
+  }
+}
+
+// I used AI (copilot) to help with this part because I wasn’t sure how to make the watchlist
+// stay saved when switching pages or refreshing. It suggested using localStorage to store the data,
+// which worked well for what I needed.
+
+function addToWatchlist(id, title, image, rating, type) {
+  let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
+
+  let alreadyExists = false;
+  for (let i = 0; i < watchlist.length; i++) {
+    if (watchlist[i].id === id) {
+      alreadyExists = true;
+    }
+  }
+
+  if (!alreadyExists) {
+    const item = {
+      id: id,
+      title: title,
+      posterPath: image,
+      rating: rating,
+      type: type,
+      watched: false,
+    };
+
+    watchlist.push(item);
+    localStorage.setItem("watchlist", JSON.stringify(watchlist));
+
+    if (type === "book") {
+      alert("Book added to Reading List!");
+    } else {
+      alert("Movie added to Watchlist!");
+    }
+  }
 }
